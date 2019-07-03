@@ -66,4 +66,31 @@ public class NodeService {
 
         return gridFsTemplate.store(file.getInputStream(), file.getName(), file.getContentType(), metaData).toString();
     }
+
+    @SuppressWarnings("unchecked")
+    private String getMainParent(String nodeId) {
+        String mainParentId = nodeId;
+
+        GridFSFile gridFsFile = gridFsTemplate.findOne(new Query(Criteria.where(NODE_ID_PARAMETER_NAME).is(nodeId)));
+        while (gridFsFile.getMetadata().get(VERSION_PARENT_PARAMETER_NAME) != null) {
+            mainParentId = (String) gridFsFile.getMetadata().get(VERSION_PARENT_PARAMETER_NAME);
+            gridFsFile = gridFsTemplate.findOne(new Query(Criteria.where(NODE_ID_PARAMETER_NAME).is(mainParentId)));
+        }
+
+        return mainParentId;
+    }
+
+
+    @SuppressWarnings("unchecked")
+    private String getLastChild(String nodeId) {
+        String lastChildId = nodeId;
+
+        GridFSFile gridFsFile = gridFsTemplate.findOne(new Query(Criteria.where(VERSION_PARENT_METADATA_PARAMETER_NAME).is(nodeId)));
+        while (gridFsFile != null) {
+            lastChildId = String.valueOf(gridFsFile.getId());
+            gridFsFile = gridFsTemplate.findOne(new Query(Criteria.where(VERSION_PARENT_METADATA_PARAMETER_NAME).is(lastChildId)));
+        }
+
+        return lastChildId;
+    }
 }
