@@ -3,6 +3,8 @@ package com.services;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
 import com.mongodb.client.gridfs.model.GridFSFile;
+import org.bson.BsonObjectId;
+import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
@@ -19,12 +21,10 @@ public class NodeService {
     private final static String VERSION_PARAMETER_NAME = "version";
     private final static String VERSION_PARENT_PARAMETER_NAME = "version_parent";
     private final static String VERSION_PARENT_METADATA_PARAMETER_NAME = "metadata.version_parent";
-    private final static String COMMENTS_PARAMETER_NAME = "comments";
     private final static Integer VERSION_FIRST = 1;
 
     @Autowired
     private GridFsTemplate gridFsTemplate;
-
 
     public String uploadNode(MultipartFile file) throws IOException {
         DBObject metaData = new BasicDBObject();
@@ -39,58 +39,67 @@ public class NodeService {
         return resource;
     }
 
-    public void deleteNode(String id) {
-        String parentId;
-        GridFSFile gridFsFile = gridFsTemplate.findOne(new Query(Criteria.where(NODE_ID_PARAMETER_NAME).is(id)));
-        if (gridFsFile.getMetadata().get(VERSION_PARENT_PARAMETER_NAME) != null) {
-            parentId = (String) gridFsFile.getMetadata().get(VERSION_PARENT_PARAMETER_NAME);
-        } else {
-            parentId = id;
+    //todo
+    //delete comments
+    public void deleteNode(String nodeId) {
+        GridFSFile gridFsLastVersionChildFile = getLastVersionChildNodeId(nodeId);
+        GridFSFile gridFsVersionParentFile = getVersionParentNode(((BsonObjectId) gridFsLastVersionChildFile.getId()).getValue().toString());
+
+        while (gridFsVersionParentFile != null) {
+            gridFsTemplate.delete(new Query(Criteria.where(NODE_ID_PARAMETER_NAME).is(gridFsLastVersionChildFile.getId())));
+
+            gridFsLastVersionChildFile = gridFsVersionParentFile;
+            gridFsVersionParentFile = getVersionParentNode(((BsonObjectId) gridFsLastVersionChildFile.getId()).getValue().toString());
         }
 
-        gridFsTemplate.delete(new Query(Criteria.where(VERSION_PARENT_METADATA_PARAMETER_NAME).is(parentId)));
-        gridFsTemplate.delete(new Query(Criteria.where(NODE_ID_PARAMETER_NAME).is(parentId)));
+        gridFsTemplate.delete(new Query(Criteria.where(NODE_ID_PARAMETER_NAME).is(gridFsLastVersionChildFile.getId())));
     }
 
     public String updateNode(MultipartFile file, String id) throws IOException {
-        GridFSFile gridFsFile = gridFsTemplate.findOne(new Query(Criteria.where(NODE_ID_PARAMETER_NAME).is(id)));
+        GridFSFile gridFsFile = getLastVersionChildNodeId(id);
 
         DBObject metaData = new BasicDBObject();
         Integer version = (Integer) gridFsFile.getMetadata().get(VERSION_PARAMETER_NAME);
         metaData.put(VERSION_PARAMETER_NAME, ++version);
-        if (gridFsFile.getMetadata().get(VERSION_PARENT_PARAMETER_NAME) != null) {
-            metaData.put(VERSION_PARENT_PARAMETER_NAME, gridFsFile.getMetadata().get(VERSION_PARENT_PARAMETER_NAME));
-        } else {
-            metaData.put(VERSION_PARENT_PARAMETER_NAME, id);
-        }
+        metaData.put(VERSION_PARENT_PARAMETER_NAME, gridFsFile.getId());
 
         return gridFsTemplate.store(file.getInputStream(), file.getName(), file.getContentType(), metaData).toString();
     }
 
-    @SuppressWarnings("unchecked")
-    private String getMainParent(String nodeId) {
-        String mainParentId = nodeId;
-
-        GridFSFile gridFsFile = gridFsTemplate.findOne(new Query(Criteria.where(NODE_ID_PARAMETER_NAME).is(nodeId)));
-        while (gridFsFile.getMetadata().get(VERSION_PARENT_PARAMETER_NAME) != null) {
-            mainParentId = (String) gridFsFile.getMetadata().get(VERSION_PARENT_PARAMETER_NAME);
-            gridFsFile = gridFsTemplate.findOne(new Query(Criteria.where(NODE_ID_PARAMETER_NAME).is(mainParentId)));
-        }
-
-        return mainParentId;
+    private GridFSFile getVersionChildNode(String nodeId) {
+        return gridFsTemplate.findOne(new Query(Criteria.where(VERSION_PARENT_METADATA_PARAMETER_NAME).is(new ObjectId(nodeId))));
     }
 
+    private GridFSFile getLastVersionChildNodeId(String nodeId) {
+        String lastVersionChildNodeId = nodeId;
 
-    @SuppressWarnings("unchecked")
-    private String getLastChild(String nodeId) {
-        String lastChildId = nodeId;
-
-        GridFSFile gridFsFile = gridFsTemplate.findOne(new Query(Criteria.where(VERSION_PARENT_METADATA_PARAMETER_NAME).is(nodeId)));
+        GridFSFile gridFsFile = getVersionChildNode(lastVersionChildNodeId);
         while (gridFsFile != null) {
-            lastChildId = String.valueOf(gridFsFile.getId());
-            gridFsFile = gridFsTemplate.findOne(new Query(Criteria.where(VERSION_PARENT_METADATA_PARAMETER_NAME).is(lastChildId)));
+            lastVersionChildNodeId = ((BsonObjectId) gridFsFile.getId()).getValue().toString();
+            gridFsFile = getVersionChildNode(lastVersionChildNodeId);
         }
 
-        return lastChildId;
+        return gridFsTemplate.findOne(new Query(Criteria.where(NODE_ID_PARAMETER_NAME).is(lastVersionChildNodeId)));
+    }
+
+    private GridFSFile getVersionParentNode(String nodeId) {
+        GridFSFile gridFsFile = gridFsTemplate.findOne(new Query(Criteria.where(NODE_ID_PARAMETER_NAME).is(nodeId)));
+        if (gridFsFile.getMetadata().get(VERSION_PARENT_PARAMETER_NAME) != null) {
+            return gridFsTemplate.findOne(new Query(Criteria.where(NODE_ID_PARAMETER_NAME).is(gridFsFile.getMetadata().get(VERSION_PARENT_PARAMETER_NAME))));
+        }
+
+        return null;
+    }
+
+    private String getMainVersionParentNodeId(String nodeId) {
+        String mainVersionParentNodeId = nodeId;
+
+        GridFSFile gridFsFile = getVersionParentNode(mainVersionParentNodeId);
+        while (gridFsFile != null) {
+            mainVersionParentNodeId = gridFsFile.getId().asString().getValue();
+            gridFsFile = getVersionParentNode(mainVersionParentNodeId);
+        }
+
+        return mainVersionParentNodeId;
     }
 }
