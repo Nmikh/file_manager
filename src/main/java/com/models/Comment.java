@@ -1,6 +1,10 @@
 package com.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
+import org.bson.types.ObjectId;
+import org.springframework.data.annotation.Id;
+
 
 @Data
 @ToString
@@ -8,7 +12,11 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Comment {
-    private String nodeId;
+    @Id
+    @JsonIgnore
+    private String id;
+    @JsonIgnore
+    private ObjectId nodeId;
     private String name;
     private String text;
 }

@@ -42,7 +42,7 @@ public class NodeService {
     //todo
     //delete comments
     public void deleteNode(String nodeId) {
-        GridFSFile gridFsLastVersionChildFile = getLastVersionChildNodeId(nodeId);
+        GridFSFile gridFsLastVersionChildFile = getLastVersionChildNode(nodeId);
         GridFSFile gridFsVersionParentFile = getVersionParentNode(((BsonObjectId) gridFsLastVersionChildFile.getId()).getValue().toString());
 
         while (gridFsVersionParentFile != null) {
@@ -56,7 +56,7 @@ public class NodeService {
     }
 
     public String updateNode(MultipartFile file, String id) throws IOException {
-        GridFSFile gridFsFile = getLastVersionChildNodeId(id);
+        GridFSFile gridFsFile = getLastVersionChildNode(id);
 
         DBObject metaData = new BasicDBObject();
         Integer version = (Integer) gridFsFile.getMetadata().get(VERSION_PARAMETER_NAME);
@@ -70,7 +70,7 @@ public class NodeService {
         return gridFsTemplate.findOne(new Query(Criteria.where(VERSION_PARENT_METADATA_PARAMETER_NAME).is(new ObjectId(nodeId))));
     }
 
-    private GridFSFile getLastVersionChildNodeId(String nodeId) {
+    public GridFSFile getLastVersionChildNode(String nodeId) {
         String lastVersionChildNodeId = nodeId;
 
         GridFSFile gridFsFile = getVersionChildNode(lastVersionChildNodeId);
@@ -91,15 +91,15 @@ public class NodeService {
         return null;
     }
 
-    private String getMainVersionParentNodeId(String nodeId) {
+    public GridFSFile getMainVersionParentNodeId(String nodeId) {
         String mainVersionParentNodeId = nodeId;
 
         GridFSFile gridFsFile = getVersionParentNode(mainVersionParentNodeId);
         while (gridFsFile != null) {
-            mainVersionParentNodeId = gridFsFile.getId().asString().getValue();
+            mainVersionParentNodeId = ((BsonObjectId) gridFsFile.getId()).getValue().toString();
             gridFsFile = getVersionParentNode(mainVersionParentNodeId);
         }
 
-        return mainVersionParentNodeId;
+        return gridFsTemplate.findOne(new Query(Criteria.where(NODE_ID_PARAMETER_NAME).is(mainVersionParentNodeId)));
     }
 }

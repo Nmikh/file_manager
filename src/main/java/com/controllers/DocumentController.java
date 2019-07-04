@@ -1,6 +1,7 @@
 package com.controllers;
 
 import com.models.Comment;
+import com.services.CommentService;
 import com.services.NodeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
@@ -19,6 +20,9 @@ public class DocumentController {
     @Autowired
     private NodeService nodeService;
 
+    @Autowired
+    private CommentService commentService;
+
     @PostMapping("/node")
     public ResponseEntity upload(@RequestParam("file") MultipartFile file) throws IOException {
         return new ResponseEntity(nodeService.uploadNode(file), HttpStatus.OK);
@@ -35,13 +39,9 @@ public class DocumentController {
                 .body(resource);
     }
 
-    @PutMapping("/node/comment/{node_id}")
-    public void addComment(@RequestBody Comment comment, @PathVariable("node_id") String nodeId) {
-
-    }
-
     @DeleteMapping("/node/{node_id}")
     public ResponseEntity deleteNode(@PathVariable("node_id") String nodeId) {
+        commentService.deleteAllComments(nodeId);
         nodeService.deleteNode(nodeId);
         return new ResponseEntity(HttpStatus.OK);
     }
@@ -50,4 +50,29 @@ public class DocumentController {
     public ResponseEntity updateNode(@RequestParam("file") MultipartFile file, @PathVariable("node_id") String nodeId) throws IOException {
         return new ResponseEntity(nodeService.updateNode(file, nodeId), HttpStatus.OK);
     }
+
+    @PostMapping("/node/comment/{node_id}")
+    public ResponseEntity addComment(@RequestBody Comment comment, @PathVariable("node_id") String nodeId) {
+        commentService.addComment(comment, nodeId);
+        return new ResponseEntity(HttpStatus.OK);
+    }
+
+    @DeleteMapping("/node/comment/{comment_id}")
+    public ResponseEntity deleteComment(@PathVariable("comment_id") String commentId) {
+        commentService.deleteComment(commentId);
+        return new ResponseEntity(HttpStatus.OK);
+    }
+
+    @GetMapping("/node/comment/{node_id}")
+    public ResponseEntity getAllComments(@PathVariable("node_id") String nodeId) {
+        return new ResponseEntity(commentService.getAllComments(nodeId), HttpStatus.OK);
+    }
+
+    @GetMapping("/node/comment/{node_id}/{page}/{size}")
+    public ResponseEntity getCommentsPage(@PathVariable("node_id") String nodeId,
+                                          @PathVariable("page") int page,
+                                          @PathVariable("size") int size) {
+        return new ResponseEntity(commentService.getAllCommentsPage(nodeId, page, size), HttpStatus.OK);
+    }
+
 }
