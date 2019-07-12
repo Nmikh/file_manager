@@ -10,9 +10,9 @@ import java.util.List;
 
 public interface CommentsRepository extends MongoRepository<Comment, String> {
 
-    public List<Comment> findByNodeId(ObjectId nodeId);
+    List<Comment> findByNodeId(ObjectId nodeId);
 
-    public void deleteAllByNodeId(ObjectId nodeId);
+    void deleteAllByNodeId(ObjectId nodeId);
 
-    public Page<Comment> findByNodeId(ObjectId nodeId, Pageable pageable);
+    Page<Comment> findByNodeId(ObjectId nodeId, Pageable pageable);
 }
