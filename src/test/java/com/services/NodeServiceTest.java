@@ -1,5 +1,6 @@
 package com.services;
 
+import com.DAO.solr.NodeSolrRepository;
 import com.DAO.solr.NodeSolrRepositoryTest;
 import com.exceptions.NodeException;
 import com.models.Node;
@@ -28,7 +29,7 @@ public class NodeServiceTest {
     private GridFsTemplate gridFsTemplate;
 
     @Autowired
-    private NodeSolrRepositoryTest nodeSolrRepository;
+    private NodeSolrRepository nodeSolrRepository;
 
     private NodeService nodeService;
 
@@ -58,7 +59,7 @@ public class NodeServiceTest {
 
     @Test
     public void deleteNodeTest() throws NodeException {
-        nodeService.deleteNode("");
+        nodeService.deleteNode("e04fd020ea3a6910a2d808002b30309d");
     }
 
     @Test
