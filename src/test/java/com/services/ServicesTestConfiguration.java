@@ -1,6 +1,7 @@
 package com.services;
 
 import com.DAO.solr.NodeSolrRepository;
+import com.DAO.solr.NodeSolrRepositoryTest;
 import com.models.Comment;
 import com.models.Node;
 import com.mongodb.DBObject;
@@ -16,7 +17,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.mongodb.gridfs.GridFsResource;
 import org.springframework.data.mongodb.gridfs.GridFsTemplate;
 
-import java.io.InputStream;
 import java.util.Arrays;
 import java.util.Calendar;
 
