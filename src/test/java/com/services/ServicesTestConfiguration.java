@@ -1,7 +1,9 @@
 package com.services;
 
+import com.DAO.CommentsRepository;
 import com.DAO.solr.NodeSolrRepository;
 import com.DAO.solr.NodeSolrRepositoryTest;
+import com.exceptions.NodeException;
 import com.models.Comment;
 import com.models.Node;
 import com.mongodb.DBObject;
@@ -28,18 +30,32 @@ import static org.mockito.Mockito.when;
 @Configuration
 public class ServicesTestConfiguration {
 
-//    @Bean
-//    public CommentsRepository getCommentsRepository() {
-//        CommentsRepository mock = Mockito.mock(CommentsRepository.class);
-//        when(mock.findByNodeId(any())).thenReturn(Arrays.asList(
-//                new Comment("id", new ObjectId("5399aba6e4b0ae375bfdca88"), "name", "text")));
-//        when(mock.findByNodeId(any(), any())).thenReturn(getPage());
-//        when(mock.save(any())).thenReturn("123");
-//
-//        doNothing().when(mock).deleteAllByNodeId(any());
-//
-//        return null;
-//    }
+    @Bean
+    public NodeService getNodeService() throws NodeException {
+        BsonValue bsonValue = getBsonValue();
+
+        NodeService mock = Mockito.mock(NodeService.class);
+        when(mock.getMainVersionParentNodeId(anyString())).thenReturn(
+                new GridFSFile(bsonValue, "filename", 12, 12, Calendar.getInstance().getTime(), null, new Document()));
+
+        return mock;
+    }
+
+    @Bean
+    public CommentsRepository getCommentsRepository() {
+        Page page = getPage();
+
+        CommentsRepository mock = Mockito.mock(CommentsRepository.class);
+        when(mock.findByNodeId(any())).thenReturn(Arrays.asList(
+                new Comment("id", new ObjectId("5399aba6e4b0ae375bfdca88"), "name", "text")));
+        when(mock.findByNodeId(any(), any())).thenReturn(page);
+        when(mock.save(any())).thenReturn(
+                new Comment("id", null, "name", "text"));
+
+        doNothing().when(mock).deleteAllByNodeId(any());
+
+        return mock;
+    }
 
     private Page getPage() {
         Page mock = Mockito.mock(Page.class);
@@ -73,13 +89,6 @@ public class ServicesTestConfiguration {
 
         return mock;
     }
-
-//    public GridFSFile getGridFSFile() {
-//        GridFSFile mock = Mockito.mock(GridFSFile.class);
-//        when(mock.getId()).thenReturn(getBsonValue());
-//
-//        return mock;
-//    }
 
     public GridFsResource getGridFsResource() {
         GridFsResource mock = Mockito.mock(GridFsResource.class);
