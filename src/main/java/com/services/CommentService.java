@@ -21,10 +21,11 @@ public class CommentService {
     @Autowired
     private CommentsRepository commentsRepository;
 
-    public void addComment(Comment comment, String nodeId) throws NodeException {
+    public String addComment(Comment comment, String nodeId) throws NodeException {
         GridFSFile mainVersionParentNodeId = nodeService.getMainVersionParentNodeId(nodeId);
         comment.setNodeId(mainVersionParentNodeId.getId().asObjectId().getValue());
-        commentsRepository.save(comment);
+        Comment saveComment = commentsRepository.save(comment);
+        return saveComment.getId();
     }
 
     public void deleteComment(String commentId) {

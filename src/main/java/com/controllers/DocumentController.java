@@ -71,8 +71,7 @@ public class DocumentController {
     @PostMapping("/node/comment/{node_id}")
     public ResponseEntity addComment(@RequestBody Comment comment, @PathVariable("node_id") String nodeId) {
         try {
-            commentService.addComment(comment, nodeId);
-            return new ResponseEntity(HttpStatus.OK);
+            return new ResponseEntity(commentService.addComment(comment, nodeId), HttpStatus.OK);
         } catch (NodeException e) {
             return new ResponseEntity(e.getMessage(), HttpStatus.BAD_REQUEST);
         }
