@@ -8,14 +8,11 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.List;
-
-import static ch.qos.logback.core.encoder.ByteArrayUtil.hexStringToByteArray;
 
 @RunWith(SpringRunner.class)
 @ContextConfiguration(classes = ServicesTestConfiguration.class)

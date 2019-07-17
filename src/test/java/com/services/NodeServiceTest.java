@@ -1,7 +1,6 @@
 package com.services;
 
 import com.DAO.solr.NodeSolrRepository;
-import com.DAO.solr.NodeSolrRepositoryTest;
 import com.exceptions.NodeException;
 import com.models.Node;
 import org.junit.Assert;
