@@ -5,6 +5,7 @@ import com.exceptions.NodeException;
 import com.models.Node;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +22,7 @@ import java.util.List;
 
 import static ch.qos.logback.core.encoder.ByteArrayUtil.hexStringToByteArray;
 
+@Ignore
 @RunWith(SpringRunner.class)
 @ContextConfiguration(classes = ServicesTestConfiguration.class)
 public class NodeServiceTest {

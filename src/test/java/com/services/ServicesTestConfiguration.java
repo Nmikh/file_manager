@@ -2,7 +2,6 @@ package com.services;
 
 import com.DAO.CommentsRepository;
 import com.DAO.solr.NodeSolrRepository;
-import com.DAO.solr.NodeSolrRepositoryTest;
 import com.exceptions.NodeException;
 import com.models.Comment;
 import com.models.Node;
@@ -12,6 +11,7 @@ import org.bson.BsonObjectId;
 import org.bson.BsonValue;
 import org.bson.Document;
 import org.bson.types.ObjectId;
+import org.junit.Ignore;
 import org.mockito.Mockito;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -27,6 +27,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 
+@Ignore
 @Configuration
 public class ServicesTestConfiguration {
 
